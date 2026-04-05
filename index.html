@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>赛博算命 · 四柱八字排盘</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=ZCOOL+XiaoWei&display=swap');
+
+    :root {
+      --ink: #2c1810;
+      --ink-light: #5a4030;
+      --ink-faint: #8a7060;
+      --paper: #f5f0e8;
+      --paper-dark: #e8dfd0;
+      --paper-darker: #d4c8b0;
+      --gold: #b8860b;
+      --gold-light: #daa520;
+      --red: #8b0000;
+      --red-light: #c41e3a;
+      --water: #2f5496;
+      --wood: #2d6a4f;
+      --fire: #c41e3a;
+      --earth: #b8860b;
+      --metal: #6c757d;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Serif SC', 'STSong', serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(ellipse at 20% 50%, rgba(139,69,19,0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(139,69,19,0.02) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+
+    /* 水墨装饰线 */
+    .ink-line {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--ink-faint), transparent);
+      margin: 2rem auto;
+      max-width: 600px;
+    }
+
+    .ink-line.thick {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--ink), transparent);
+    }
+
+    /* 头部 */
+    header {
+      text-align: center;
+      padding: 3rem 1rem 1rem;
+      position: relative;
+    }
+
+    header::before {
+      content: '☰';
+      display: block;
+      font-size: 2rem;
+      color: var(--ink-faint);
+      margin-bottom: 0.5rem;
+      letter-spacing: 1rem;
+    }
+
+    h1 {
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: 0.5rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 2px 2px 4px rgba(44,24,16,0.1);
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.3rem;
+    }
+
+    /* 容器 */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 1.5rem 3rem;
+    }
+
+    /* 输入表单 */
+    .form-card {
+      background: rgba(255,255,255,0.6);
+      border: 1px solid var(--paper-darker);
+      border-radius: 8px;
+      padding: 2rem;
+      margin: 2rem 0;
+      box-shadow: 0 4px 20px rgba(44,24,16,0.08);
+      position: relative;
+    }
+
+    .form-card::before {
+      content: '命';
+      position: absolute;
+      top: -1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--paper);
+      padding: 0 1rem;
+      font-size: 1.2rem;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .form-title {
+      text-align: center;
+      font-size: 1.3rem;
+      color: var(--ink);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.2rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-group label {
+      font-size: 0.9rem;
+      color: var(--ink-light);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.1rem;
+    }
+
+    .form-group input,
+    .form-group select {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1rem;
+      padding: 0.7rem 1rem;
+      border: 1px solid var(--paper-darker);
+      border-radius: 4px;
+      background: rgba(255,255,255,0.8);
+      color: var(--ink);
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(184,134,11,0.15);
+    }
+
+    .submit-btn {
+      display: block;
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 1rem;
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.5rem;
+      color: var(--paper);
+      background: linear-gradient(135deg, var(--ink) 0%, var(--ink-light) 100%);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .submit-btn:hover {
+      background: linear-gradient(135deg, var(--red) 0%, var(--red-light) 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(139,0,0,0.2);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* 加载动画 */
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      display: none;
+    }
+
+    .loading.active { display: block; }
+
+    .loading-text {
+      font-size: 1.1rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.2rem;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .bagua-spin {
+      font-size: 3rem;
+      display: inline-block;
+      animation: spin 3s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* 结果区域 */
+    #result { display: none; }
+    #result.active { display: block; }
+
+    /* 四柱展示 */
+    .pillars-section {
+      margin: 2rem 0;
+    }
+
+    .section-title {
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: 1.5rem;
+      text-align: center;
+      color: var(--ink);
+      letter-spacing: 0.3rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .pillar {
+      background: rgba(255,255,255,0.7);
+      border: 1px solid var(--paper-darker);
+      border-radius: 8px;
+      padding: 1.2rem 0.5rem;
+      text-align: center;
+      position: relative;
+      transition: transform 0.3s;
+    }
+
+    .pillar:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 15px rgba(44,24,16,0.1);
+    }
+
+    .pillar-label {
+      font-size: 0.8rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.15rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .pillar-gan {
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 0.3rem;
+    }
+
+    .pillar-zhi {
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+
+    .pillar-shishen {
+      font-size: 0.75rem;
+      color: var(--gold);
+      letter-spacing: 0.1rem;
+      margin-bottom: 0.3rem;
+      min-height: 1.2em;
+    }
+
+    .pillar-canggan {
+      font-size: 0.7rem;
+      color: var(--ink-faint);
+      line-height: 1.5;
+    }
+
+    /* 五行颜色 */
+    .wx-木 { color: var(--wood); }
+    .wx-火 { color: var(--fire); }
+    .wx-土 { color: var(--earth); }
+    .wx-金 { color: var(--metal); }
+    .wx-水 { color: var(--water); }
+
+    /* 五行统计 */
+    .wuxing-chart {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .wuxing-item {
+      text-align: center;
+      min-width: 60px;
+    }
+
+    .wuxing-bar-wrap {
+      width: 40px;
+      height: 100px;
+      background: var(--paper-dark);
+      border-radius: 4px;
+      margin: 0 auto 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wuxing-bar {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      transition: height 1s ease-out;
+    }
+
+    .wuxing-bar.木 { background: linear-gradient(to top, #2d6a4f, #52b788); }
+    .wuxing-bar.火 { background: linear-gradient(to top, #c41e3a, #ef476f); }
+    .wuxing-bar.土 { background: linear-gradient(to top, #b8860b, #daa520); }
+    .wuxing-bar.金 { background: linear-gradient(to top, #6c757d, #adb5bd); }
+    .wuxing-bar.水 { background: linear-gradient(to top, #2f5496, #5b8fd9); }
+
+    .wuxing-name {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .wuxing-value {
+      font-size: 0.8rem;
+      color: var(--ink-faint);
+    }
+
+    /* 大运表 */
+    .dayun-section {
+      margin: 2rem 0;
+    }
+
+    .dayun-scroll {
+      display: flex;
+      gap: 0.8rem;
+      overflow-x: auto;
+      padding: 1rem 0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .dayun-item {
+      flex-shrink: 0;
+      width: 80px;
+      text-align: center;
+      padding: 0.8rem 0.4rem;
+      border: 1px solid var(--paper-darker);
+      border-radius: 6px;
+      background: rgba(255,255,255,0.5);
+      transition: all 0.3s;
+    }
+
+    .dayun-item.current {
+      border-color: var(--gold);
+      background: rgba(184,134,11,0.08);
+      box-shadow: 0 2px 10px rgba(184,134,11,0.15);
+    }
+
+    .dayun-age {
+      font-size: 0.7rem;
+      color: var(--ink-faint);
+    }
+
+    .dayun-gz {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin: 0.3rem 0;
+    }
+
+    .dayun-years {
+      font-size: 0.65rem;
+      color: var(--ink-faint);
+    }
+
+    /* AI 分析区域 */
+    .analysis-section {
+      margin: 2rem 0;
+    }
+
+    .analysis-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .analysis-block {
+      background: rgba(255,255,255,0.6);
+      border: 1px solid var(--paper-darker);
+      border-radius: 10px;
+      padding: 1.5rem 1.8rem;
+      line-height: 1.9;
+      font-size: 0.95rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .analysis-block:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(44,24,16,0.08);
+    }
+
+    .analysis-block::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      border-radius: 10px 0 0 10px;
+    }
+
+    .analysis-block.block-日主 { border-left: 4px solid var(--wood); }
+    .analysis-block.block-十神 { border-left: 4px solid var(--gold); }
+    .analysis-block.block-五行 { border-left: 4px solid var(--water); }
+    .analysis-block.block-大运 { border-left: 4px solid #7b2d8e; }
+    .analysis-block.block-事业 { border-left: 4px solid var(--fire); }
+    .analysis-block.block-感情 { border-left: 4px solid #e75480; }
+    .analysis-block.block-健康 { border-left: 4px solid var(--wood); }
+    .analysis-block.block-综合 { border-left: 4px solid var(--gold); }
+    .analysis-block.block-default { border-left: 4px solid var(--ink-faint); }
+
+    .analysis-block-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--paper-darker);
+    }
+
+    .analysis-block-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .analysis-block-title {
+      font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 0.1rem;
+    }
+
+    .analysis-block-body {
+      color: var(--ink-light);
+    }
+
+    .analysis-block-body p {
+      margin-bottom: 0.7rem;
+    }
+
+    .analysis-block-body strong {
+      color: var(--ink);
+      background: linear-gradient(to bottom, transparent 60%, rgba(184,134,11,0.15) 60%);
+      padding: 0 2px;
+    }
+
+    .analysis-block-body blockquote {
+      border-left: 3px solid var(--gold);
+      padding: 0.5rem 1rem;
+      margin: 0.8rem 0;
+      background: rgba(184,134,11,0.04);
+      border-radius: 0 6px 6px 0;
+      color: var(--ink-faint);
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+
+    .analysis-block-body code {
+      background: rgba(44,24,16,0.06);
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.88rem;
+      color: var(--ink);
+    }
+
+    .analysis-block-body h3 {
+      font-size: 1rem;
+      color: var(--ink);
+      margin: 1rem 0 0.5rem;
+    }
+
+    /* 标签样式（用于喜用神等） */
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.6rem;
+      border-radius: 3px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin: 0.1rem 0.2rem;
+    }
+
+    .tag-xi { background: rgba(45,106,79,0.12); color: var(--wood); border: 1px solid rgba(45,106,79,0.2); }
+    .tag-ji { background: rgba(139,0,0,0.08); color: var(--red); border: 1px solid rgba(139,0,0,0.15); }
+    .tag-info { background: rgba(47,84,150,0.1); color: var(--water); border: 1px solid rgba(47,84,150,0.2); }
+
+    /* 旧的 analysis-card 保留兼容 */
+    .analysis-card {
+      line-height: 1.9;
+      font-size: 0.95rem;
+    }
+
+    .analyze-btn {
+      display: block;
+      width: 100%;
+      margin: 1.5rem 0;
+      padding: 0.8rem;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.3rem;
+      color: var(--paper);
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .analyze-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(184,134,11,0.3);
+    }
+
+    .analyze-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* 免责声明 */
+    .disclaimer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.8rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.1rem;
+    }
+
+    /* 响应式 */
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; letter-spacing: 0.3rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .pillars-grid { grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+      .pillar-gan, .pillar-zhi { font-size: 1.6rem; }
+      .container { padding: 0 1rem 2rem; }
+    }
+
+    /* 重新排盘按钮 */
+    .restart-btn {
+      display: inline-block;
+      margin: 1rem auto;
+      padding: 0.6rem 2rem;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.2rem;
+      color: var(--ink-faint);
+      background: transparent;
+      border: 1px solid var(--paper-darker);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .restart-btn:hover {
+      border-color: var(--ink-faint);
+      color: var(--ink);
+    }
+
+    /* 印章效果 */
+    .seal {
+      display: inline-block;
+      border: 3px solid var(--red);
+      color: var(--red);
+      padding: 0.3rem 0.6rem;
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: 0.1rem;
+      transform: rotate(-5deg);
+      opacity: 0.7;
+      margin-left: 0.5rem;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+      color: var(--ink-light);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>赛博算命</h1>
+  <div class="subtitle">四柱八字 · 命理排盘</div>
+</header>
+
+<div class="ink-line thick"></div>
+
+<div class="container">
+
+  <!-- 输入表单 -->
+  <div id="formSection" class="form-card">
+    <div class="form-title">请输入出生信息</div>
+    <form id="baziForm" class="form-grid">
+      <div class="form-group full">
+        <label>姓名</label>
+        <input type="text" id="name" placeholder="请输入姓名" required>
+      </div>
+      <div class="form-group">
+        <label>出生年份（阳历）</label>
+        <input type="number" id="year" placeholder="如：1990" min="1900" max="2030" required>
+      </div>
+      <div class="form-group">
+        <label>出生月份</label>
+        <select id="month" required>
+          <option value="">选择月份</option>
+          <option value="1">1月</option><option value="2">2月</option>
+          <option value="3">3月</option><option value="4">4月</option>
+          <option value="5">5月</option><option value="6">6月</option>
+          <option value="7">7月</option><option value="8">8月</option>
+          <option value="9">9月</option><option value="10">10月</option>
+          <option value="11">11月</option><option value="12">12月</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>出生日期</label>
+        <input type="number" id="day" placeholder="如：15" min="1" max="31" required>
+      </div>
+      <div class="form-group">
+        <label>出生时辰</label>
+        <select id="hour">
+          <option value="">不确定</option>
+          <option value="0">子时 (23:00-01:00)</option>
+          <option value="1">丑时 (01:00-03:00)</option>
+          <option value="3">寅时 (03:00-05:00)</option>
+          <option value="5">卯时 (05:00-07:00)</option>
+          <option value="7">辰时 (07:00-09:00)</option>
+          <option value="9">巳时 (09:00-11:00)</option>
+          <option value="11">午时 (11:00-13:00)</option>
+          <option value="13">未时 (13:00-15:00)</option>
+          <option value="15">申时 (15:00-17:00)</option>
+          <option value="17">酉时 (17:00-19:00)</option>
+          <option value="19">戌时 (19:00-21:00)</option>
+          <option value="21">亥时 (21:00-23:00)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>性别</label>
+        <select id="gender" required>
+          <option value="">选择性别</option>
+          <option value="male">男</option>
+          <option value="female">女</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <button type="submit" class="submit-btn" id="submitBtn">开始排盘</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 加载动画 -->
+  <div id="loading" class="loading">
+    <div class="bagua-spin">☯</div>
+    <div class="loading-text">排盘计算中，请稍候...</div>
+  </div>
+
+  <!-- 结果 -->
+  <div id="result">
+    <!-- 基本信息 -->
+    <div id="basicInfo" class="info-row"></div>
+
+    <div class="ink-line"></div>
+
+    <!-- 四柱 -->
+    <div class="pillars-section">
+      <div class="section-title">四 柱 排 盘</div>
+      <div id="pillarsGrid" class="pillars-grid"></div>
+    </div>
+
+    <div class="ink-line"></div>
+
+    <!-- 五行 -->
+    <div class="pillars-section">
+      <div class="section-title">五 行 分 布</div>
+      <div id="wuxingChart" class="wuxing-chart"></div>
+    </div>
+
+    <div class="ink-line"></div>
+
+    <!-- 大运 -->
+    <div class="dayun-section">
+      <div class="section-title">大 运 排 列</div>
+      <div id="dayunInfo" style="text-align:center;font-size:0.85rem;color:var(--ink-faint);margin-bottom:0.5rem;"></div>
+      <div id="dayunScroll" class="dayun-scroll"></div>
+    </div>
+
+    <div class="ink-line"></div>
+
+    <!-- AI 分析 -->
+    <div class="analysis-section">
+      <div class="section-title">命 理 分 析</div>
+      <button id="analyzeBtn" class="analyze-btn" onclick="requestAnalysis()">🎴 请求 AI 命理解读</button>
+      <div id="analysisLoading" class="loading">
+        <div class="bagua-spin">☯</div>
+        <div class="loading-text">AI 正在参阅典籍，细细推算...</div>
+      </div>
+      <div id="analysisCard" class="analysis-container" style="display:none;"></div>
+    </div>
+
+    <div style="text-align:center;margin:2rem 0;">
+      <button class="restart-btn" onclick="restart()">重新排盘</button>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ 命理分析仅供传统文化学习与娱乐参考，不构成任何决策依据<br>
+    人生在于自身的努力和选择 🎴
+  </div>
+</div>
+
+<script src="bazi-core.js"></script>
+<script>
+  let currentPaipanData = null;
+  const API_KEY = 'sk-fe84f80c9b114c6d87baca613824a264';
+
+  const wuxingColors = {
+    '木': 'var(--wood)', '火': 'var(--fire)', '土': 'var(--earth)',
+    '金': 'var(--metal)', '水': 'var(--water)'
+  };
+
+  document.getElementById('baziForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '排盘中...';
+    
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('result').classList.remove('active');
+
+    try {
+      const hourVal = document.getElementById('hour').value;
+      const data = baziPaipan({
+        name: document.getElementById('name').value,
+        year: parseInt(document.getElementById('year').value),
+        month: parseInt(document.getElementById('month').value),
+        day: parseInt(document.getElementById('day').value),
+        hour: hourVal !== '' ? parseInt(hourVal) : null,
+        gender: document.getElementById('gender').value
+      });
+      
+      currentPaipanData = data;
+      renderResult(data);
+      document.getElementById('loading').classList.remove('active');
+      document.getElementById('result').classList.add('active');
+    } catch (err) {
+      alert('排盘计算出错，请检查输入信息：' + err.message);
+      restart();
+    }
+
+    btn.disabled = false;
+    btn.textContent = '开始排盘';
+  });
+
+  function renderResult(data) {
+    // 基本信息
+    document.getElementById('basicInfo').innerHTML = `
+      <span>${data.name}</span>
+      <span>${data.gender}</span>
+      <span>${data.birthInfo.year}年${data.birthInfo.month}月${data.birthInfo.day}日</span>
+      <span>生肖${data.yearPillar.shengxiao}</span>
+      <span>现年${data.age}岁</span>
+    `;
+
+    // 四柱
+    const pillars = [
+      { label: '年柱', data: data.yearPillar },
+      { label: '月柱', data: data.monthPillar },
+      { label: '日柱', data: data.dayPillar },
+      { label: '时柱', data: data.hourPillar }
+    ];
+
+    document.getElementById('pillarsGrid').innerHTML = pillars.map(p => {
+      if (!p.data) {
+        return `<div class="pillar">
+          <div class="pillar-label">${p.label}</div>
+          <div class="pillar-gan" style="color:var(--ink-faint)">？</div>
+          <div class="pillar-zhi" style="color:var(--ink-faint)">？</div>
+          <div class="pillar-shishen">未知</div>
+          <div class="pillar-canggan">—</div>
+        </div>`;
+      }
+      const ganColor = wuxingColors[p.data.wuxing.gan];
+      const zhiColor = wuxingColors[p.data.wuxing.zhi];
+      const cangganStr = p.data.cangGan.map(c => 
+        `<span style="color:${wuxingColors[c.wuxing]}">${c.gan}</span>`
+      ).join(' ');
+      
+      return `<div class="pillar">
+        <div class="pillar-label">${p.label}</div>
+        <div class="pillar-gan" style="color:${ganColor}">${p.data.gan}</div>
+        <div class="pillar-zhi" style="color:${zhiColor}">${p.data.zhi}</div>
+        <div class="pillar-shishen">${p.data.shiShen}</div>
+        <div class="pillar-canggan">${cangganStr}</div>
+      </div>`;
+    }).join('');
+
+    // 五行
+    const maxWX = Math.max(...Object.values(data.wuxingCount));
+    document.getElementById('wuxingChart').innerHTML = ['木', '火', '土', '金', '水'].map(wx => {
+      const val = data.wuxingCount[wx];
+      const pct = (val / maxWX * 100).toFixed(0);
+      return `<div class="wuxing-item">
+        <div class="wuxing-bar-wrap">
+          <div class="wuxing-bar ${wx}" style="height: 0%;" data-height="${pct}%"></div>
+        </div>
+        <div class="wuxing-name" style="color:${wuxingColors[wx]}">${wx}</div>
+        <div class="wuxing-value">${val.toFixed(1)}</div>
+      </div>`;
+    }).join('');
+
+    // 五行柱状图动画
+    setTimeout(() => {
+      document.querySelectorAll('.wuxing-bar').forEach(bar => {
+        bar.style.height = bar.dataset.height;
+      });
+    }, 100);
+
+    // 大运
+    document.getElementById('dayunInfo').textContent = 
+      `${data.dayun.direction} · ${data.dayun.startAge}岁起运`;
+
+    document.getElementById('dayunScroll').innerHTML = data.dayun.list.map(d => {
+      const isCurrent = data.currentDayun && 
+        d.startAge === data.currentDayun.startAge;
+      const ganColor = wuxingColors[d.gan ? 
+        ({'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'})[d.gan] : '土'];
+      return `<div class="dayun-item ${isCurrent ? 'current' : ''}">
+        <div class="dayun-age">${d.startAge}-${d.endAge}岁</div>
+        <div class="dayun-gz" style="color:${ganColor}">${d.gan}${d.zhi}</div>
+        <div class="dayun-years">${d.startYear}年起</div>
+      </div>`;
+    }).join('');
+  }
+
+  async function requestAnalysis() {
+    if (!currentPaipanData) return;
+    
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+    btn.style.display = 'none';
+    document.getElementById('analysisLoading').classList.add('active');
+
+    try {
+      const data = currentPaipanData;
+      const hp = data.hourPillar;
+      const fourPillars = `年柱: ${data.yearPillar.gan}${data.yearPillar.zhi}  月柱: ${data.monthPillar.gan}${data.monthPillar.zhi}  日柱: ${data.dayPillar.gan}${data.dayPillar.zhi}  时柱: ${hp ? hp.gan + hp.zhi : '未知'}`;
+      const wuxing = Object.entries(data.wuxingCount).map(([k,v]) => `${k}: ${v.toFixed(1)}`).join(', ');
+      const dayunStr = data.dayun.list.map(d => `${d.startAge}-${d.endAge}岁: ${d.gan}${d.zhi}`).join('\n');
+
+      const prompt = `你是一位精通中国传统四柱八字命理的专业研究者，熟读《穷通宝典》《三命通会》《滴天髓》《渊海子平》《千里命稿》《子平真诠》《神峰通考》等经典典籍。
+
+请根据以下排盘结果进行专业的命理分析。
+
+## 命主信息
+- 姓名：${data.name}
+- 性别：${data.gender}
+- 阳历生日：${data.birthInfo.year}年${data.birthInfo.month}月${data.birthInfo.day}日
+- 出生时辰：${hp ? hp.zhi + '时' : '未知'}
+- 当前年龄：${data.age}岁
+
+## 四柱排盘
+${fourPillars}
+
+- 日主：${data.dayMaster.gan}（${data.dayMaster.yinyang}${data.dayMaster.wuxing}）
+- 年柱十神：${data.yearPillar.shiShen}
+- 月柱十神：${data.monthPillar.shiShen}
+${hp ? '- 时柱十神：' + hp.shiShen : ''}
+- 生肖：${data.yearPillar.shengxiao}
+
+## 五行力量分布
+${wuxing}
+
+## 大运（${data.dayun.direction}，${data.dayun.startAge}岁起运）
+${dayunStr}
+
+${data.currentDayun ? '当前大运：' + data.currentDayun.gan + data.currentDayun.zhi + '（' + data.currentDayun.startAge + '-' + data.currentDayun.endAge + '岁）' : ''}
+
+## 当年流年
+${data.currentYear}年 ${data.liunian.gan}${data.liunian.zhi}（${data.liunian.shiShen}）
+
+---
+
+请按以下结构进行分析，每部分用 ## 标题分隔，语言通俗易懂但不失专业性，适当引用经典典籍出处：
+
+## 🌿 日主分析
+分析日干旺衰（得令、得地、得势），判断身旺身弱，以及日主五行特性对性格的影响。
+
+## ⭐ 十神格局
+分析命局十神分布特点，判定格局类型和高低成败。
+
+## ☯️ 五行平衡
+分析五行偏旺偏缺，确定喜用神和忌神。
+
+## 🔮 大运流年
+分析各步大运趋势，重点解读当前大运和近几年流年。用"先苦后甜"或"平稳上升"之类通俗的说法概括人生走势。
+
+## 💼 事业财运
+给出事业方向建议和财运趋势分析。
+
+## 💑 感情婚姻
+分析感情运势和婚姻特点。
+
+## 🏥 健康提醒
+根据五行旺衰给出健康注意事项。
+
+## 🎯 综合建议
+喜用颜色、方位、数字等吉祥参考，以及总体人生建议。
+
+最后提醒："以上命理分析仅供传统文化学习与娱乐参考，人生在于自身的努力和选择 🎴"`;
+
+      const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + API_KEY
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+          max_tokens: 4096
+        })
+      });
+
+      const json = await res.json();
+      const analysis = json.choices?.[0]?.message?.content;
+      
+      if (analysis) {
+        const card = document.getElementById('analysisCard');
+        card.innerHTML = renderAnalysis(analysis);
+        card.style.display = 'flex';
+      } else {
+        alert('AI 分析返回为空，请稍后重试');
+        btn.style.display = 'block';
+        btn.disabled = false;
+      }
+    } catch (err) {
+      alert('AI 分析请求失败：' + err.message);
+      btn.style.display = 'block';
+      btn.disabled = false;
+    }
+
+    document.getElementById('analysisLoading').classList.remove('active');
+  }
+
+  // 章节配置：图标 + CSS 类名
+  const sectionConfig = {
+    '日主': { icon: '🌿', cls: '日主' },
+    '十神': { icon: '⭐', cls: '十神' },
+    '格局': { icon: '⭐', cls: '十神' },
+    '五行': { icon: '☯', cls: '五行' },
+    '大运': { icon: '🔮', cls: '大运' },
+    '流年': { icon: '🔮', cls: '大运' },
+    '事业': { icon: '💼', cls: '事业' },
+    '财运': { icon: '💰', cls: '事业' },
+    '感情': { icon: '💑', cls: '感情' },
+    '婚姻': { icon: '💑', cls: '感情' },
+    '健康': { icon: '🏥', cls: '健康' },
+    '综合': { icon: '🎯', cls: '综合' },
+    '建议': { icon: '🎯', cls: '综合' },
+    '提示': { icon: '🎴', cls: 'default' }
+  };
+
+  function getSectionConfig(title) {
+    for (const [key, cfg] of Object.entries(sectionConfig)) {
+      if (title.includes(key)) return cfg;
+    }
+    return { icon: '📜', cls: 'default' };
+  }
+
+  function markdownBodyToHtml(text) {
+    return text
+      .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+      .replace(/```[\s\S]*?```/g, (match) => `<pre>${match.slice(3, -3)}</pre>`)
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      // 喜用神标签化
+      .replace(/喜[神用]：?\s*([木火土金水]+)/g, (m, wx) => {
+        const tags = wx.split('').map(w => `<span class="tag tag-xi">${w}</span>`).join('');
+        return `喜用：${tags}`;
+      })
+      .replace(/忌[神]：?\s*([木火土金水]+)/g, (m, wx) => {
+        const tags = wx.split('').map(w => `<span class="tag tag-ji">${w}</span>`).join('');
+        return `忌神：${tags}`;
+      })
+      // 身旺身弱高亮
+      .replace(/(身[旺弱])/g, '<span class="tag tag-info">$1</span>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>')
+      .replace(/^/, '<p>').replace(/$/, '</p>');
+  }
+
+  function renderAnalysis(md) {
+    // 按 ## 标题拆分成章节
+    const sections = md.split(/^## /gm).filter(s => s.trim());
+    
+    if (sections.length <= 1) {
+      // 没有 ## 标题，作为单个卡片
+      return `<div class="analysis-block block-default">
+        <div class="analysis-block-body">${markdownBodyToHtml(md)}</div>
+      </div>`;
+    }
+
+    return sections.map(section => {
+      const lines = section.split('\n');
+      const title = lines[0].trim();
+      const body = lines.slice(1).join('\n').trim();
+      const cfg = getSectionConfig(title);
+      
+      return `<div class="analysis-block block-${cfg.cls}">
+        <div class="analysis-block-header">
+          <span class="analysis-block-icon">${cfg.icon}</span>
+          <span class="analysis-block-title">${title.replace(/^[🌿⭐☯💼💰💑🔮🏥🎯🎴]\s*/, '')}</span>
+        </div>
+        <div class="analysis-block-body">${markdownBodyToHtml(body)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function markdownToHtml(md) {
+    return renderAnalysis(md);
+  }
+
+  function restart() {
+    document.getElementById('formSection').style.display = 'block';
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('result').classList.remove('active');
+    document.getElementById('analyzeBtn').style.display = 'block';
+    document.getElementById('analyzeBtn').disabled = false;
+    document.getElementById('analysisCard').style.display = 'none';
+    currentPaipanData = null;
+  }
+</script>
+
+</body>
+</html>
