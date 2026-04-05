@@ -98,6 +98,7 @@ function getSolarTerm(year, termIndex) {
   if (year % 4 === 0 && month <= 2) adjustDay -= 1;
   
   return new Date(year, month - 1, adjustDay);
+}
 
 // 十二节（用于月柱和起运计算，非中气）
 // 索引：0=小寒 2=立春 4=惊蛰 6=清明 8=立夏 10=芒种 12=小暑 14=立秋 16=白露 18=寒露 20=立冬 22=大雪
@@ -113,6 +114,7 @@ function getJieQiDates(year) {
     name: ['小寒', '立春', '惊蛰', '清明', '立夏', '芒种', 
            '小暑', '立秋', '白露', '寒露', '立冬', '大雪'][JIE_INDICES.indexOf(idx)]
   }));
+}
 
 // ==================== 四柱计算 ====================
 
@@ -138,6 +140,7 @@ function getYearPillar(year, month, day) {
     zhi: DI_ZHI[zhiIdx],
     year: actualYear
   };
+}
 
 /**
  * 计算月柱
@@ -214,6 +217,7 @@ function getMonthPillar(year, month, day, yearGan) {
     zhi: DI_ZHI[monthZhiIdx],
     jieDate: jieDate
   };
+}
 
 /**
  * 计算日柱
@@ -243,6 +247,7 @@ function getDayPillar(year, month, day) {
     gan: TIAN_GAN[ganIdx >= 0 ? ganIdx : ganIdx + 10],
     zhi: DI_ZHI[zhiIdx >= 0 ? zhiIdx : zhiIdx + 12]
   };
+}
 
 /**
  * 计算时柱
@@ -263,6 +268,7 @@ function getHourPillar(dayGan, hour) {
     gan: TIAN_GAN[ganIdx],
     zhi: DI_ZHI[zhiIdx]
   };
+}
 
 // ==================== 十神计算 ====================
 
@@ -286,6 +292,7 @@ function getShiShen(dayGan, otherGan) {
   else if (KE_MAP[otherWX] === dayWX) relation = '被克';     // 克我
   
   return SHI_SHEN_TABLE[`${relation}_${sameYY}`];
+}
 
 // ==================== 大运计算 ====================
 
@@ -354,6 +361,7 @@ function getDaYun(yearGan, gender, monthPillar, birthYear, birthMonth, birthDay)
     direction: isShun ? '顺排' : '逆排',
     list: dayunList
   };
+}
 
 // ==================== 五行统计 ====================
 
@@ -375,6 +383,7 @@ function countWuXing(pillars) {
   }
   
   return count;
+}
 
 // ==================== 流年 ====================
 
@@ -386,6 +395,7 @@ function getLiuNian(year) {
     gan: TIAN_GAN[ganIdx],
     zhi: DI_ZHI[zhiIdx]
   };
+}
 
 // ==================== 主函数：完整排盘 ====================
 
@@ -515,3 +525,4 @@ function baziPaipan(params) {
   };
 }
 
+// 浏览器全局可用
